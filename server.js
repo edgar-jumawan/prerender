@@ -1,13 +1,30 @@
 #!/usr/bin/env node
-var prerender = require('./lib');
+const prerender = require('./lib');
+const puppeteer = require('puppeteer');
 
-var server = prerender();
+(async () => {
+  // Use Puppeteer's built-in Chromium
+  const chromiumPath = puppeteer.executablePath();
+  process.env.CHROME_LOCATION = chromiumPath;
 
-server.use(prerender.sendPrerenderHeader());
-server.use(prerender.browserForceRestart());
-// server.use(prerender.blockResources());
-server.use(prerender.addMetaTags());
-server.use(prerender.removeScriptTags());
-server.use(prerender.httpHeaders());
+  const server = prerender();
 
-server.start();
+  // Optional middlewares
+  server.use(prerender.sendPrerenderHeader());
+  server.use(prerender.browserForceRestart());
+  // server.use(prerender.blockResources());
+  server.use(prerender.addMetaTags());
+  server.use(prerender.removeScriptTags());
+  server.use(prerender.httpHeaders());
+
+  server.start({
+    chromeLocation: chromiumPath,
+    chromeFlags: [
+      '--headless',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      '--remote-debugging-port=9222',
+    ],
+  });
+})();
