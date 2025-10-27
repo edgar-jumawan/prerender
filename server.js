@@ -1,14 +1,16 @@
+#!/usr/bin/env node
 const prerender = require('./lib');
 const chromium = require('chrome-aws-lambda');
 
 (async () => {
   const chromiumPath = await chromium.executablePath;
-  process.env.CHROME_LOCATION = chromiumPath;
 
   const server = prerender();
 
+  // Middlewares
   server.use(prerender.sendPrerenderHeader());
   server.use(prerender.browserForceRestart());
+  // server.use(prerender.blockResources());
   server.use(prerender.addMetaTags());
   server.use(prerender.removeScriptTags());
   server.use(prerender.httpHeaders());
